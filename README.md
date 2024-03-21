@@ -384,13 +384,14 @@ Test the ```CUSTOMERS_ORDERS_COMPLETE``` stream:
 SELECT * FROM CUSTOMERS_ORDERS_COMPLETE EMIT CHANGES;
 ```
 
-At the end of this step you have the complete *Streaming Pipeline*
-
 Exit from ksql cli:
 
 ```
     ksql> exit
 ```
+
+
+At the end of this step you have the complete *Streaming Pipeline*
 
 ![CRM Streaming Pipeline](images/02_ksql.png)
 
