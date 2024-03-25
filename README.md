@@ -1,3 +1,9 @@
+# Confluent CDC demo
+
+This demo shows how to join the customers information from MS Sql Server DB and the Products information from Postgres.
+
+In the demo we create a data streaming pipeline that gets infos from relational databases and joins and transform them to create an entry into MongoDB. 
+
 # Start docker
 
 This tutorial uses [jq](https://jqlang.github.io/jq/) to format some outputs of the Confluent Platform components
@@ -272,14 +278,14 @@ Create ```Customers``` Table from topic ```mssql.crm.dbo.Customers```:
 
 ```sql
 CREATE TABLE customers (
-    id INT PRIMARY KEY, 
-    name string, 
-    surname string, 
-    address string,
-    zip_code string,
-    city string, 
-    country string, 
-    username string 
+    `id` INT PRIMARY KEY, 
+    `name` string, 
+    `surname` string, 
+    `address` string,
+    `zip_code` string,
+    `city` string, 
+    `country` string, 
+    `username` string 
 ) WITH (
     KAFKA_TOPIC = 'mssql.crm.dbo.Customers', 
     VALUE_FORMAT='AVRO', 
@@ -296,10 +302,10 @@ Create the stream ```orders``` from topic ```mssql.crm.dbo.Orders```:
 
 ```sql
 CREATE STREAM orders (
-    id INT KEY, 
-    itemid int, 
-    quantity int, 
-    customerid int 
+    `id` INT KEY, 
+    `itemid` int, 
+    `quantity` int, 
+    `customerid` int 
 ) WITH (
     kafka_topic='mssql.crm.dbo.Orders',
     value_format='AVRO', 
@@ -316,14 +322,14 @@ Create the ```customers``` - ```orders``` join stream:
 
 ```sql   
 CREATE stream CUSTOMERS_ORDERS as
-    SELECT orders.id AS orderid, 
-        username, 
-        name, 
-        surname, 
-        quantity, 
-        customerid
+    SELECT orders.`id` AS `orderid`, 
+        `username`, 
+        `name`, 
+        `surname`, 
+        `quantity`, 
+        `customerid`
     FROM orders
-    LEFT JOIN customers ON orders.customerid = customers.id;
+    LEFT JOIN customers ON orders.`customerid` = customers.`id`;
 ```
 
 Test the ```customers``` - ```orders``` stream:
@@ -331,6 +337,9 @@ Test the ```customers``` - ```orders``` stream:
 ```sql
 SELECT * FROM  CUSTOMERS_ORDERS EMIT CHANGES;
 ```
+At the end of this step you have this *Streaming Pipeline*
+
+![CRM Streaming Pipeline](images/01_ksql.png)
 
 ## Create the Table and Stream from Postgress
 
@@ -338,10 +347,10 @@ We create ```Products``` Table from topic ```pg.public.products```:
 
 ```sql
 CREATE TABLE products (
-    id INT PRIMARY KEY, 
-    name string,
-    brand string,
-    price INT
+    `id` INT PRIMARY KEY, 
+    `name` string,
+    `brand` string,
+    `price` INT
 ) WITH (
     KAFKA_TOPIC = 'pg.public.products', 
     VALUE_FORMAT='AVRO', 
@@ -354,9 +363,7 @@ Test if the ```Products``` table contains data:
 ```sql
 SELECT * FROM products EMIT CHANGES;
 ```
-At the end of this step you have this *Streaming Pipeline*
 
-![CRM Streaming Pipeline](images/01_ksql.png)
 
 ## Join the data from SQL server and Postgress
 
@@ -365,17 +372,17 @@ Create the join stream:
 ```sql   
 CREATE stream CUSTOMERS_ORDERS_COMPLETE as
     SELECT 
-        orderid, 
-        username, 
-        CUSTOMERS_ORDERS.name as name, 
-        surname, 
-        quantity, 
-        customerid, 
-        products.name as productname, 
-        brand, 
-        price
+        `orderid`, 
+        `username`, 
+        CUSTOMERS_ORDERS.`name` as `name`, 
+        `surname`, 
+        `quantity`, 
+        `customerid`, 
+        products.`name` as `productname`, 
+        `brand`, 
+        `price`
     FROM CUSTOMERS_ORDERS
-    LEFT JOIN products ON products.id = CUSTOMERS_ORDERS.orderid;
+    LEFT JOIN products ON products.`id` = CUSTOMERS_ORDERS.`orderid`;
 ```
 
 Test the ```CUSTOMERS_ORDERS_COMPLETE``` stream:
@@ -414,4 +421,5 @@ And count documents in mongodb while we are inserting new orders:
 Or just count documents in a shell while loop:
 ```
     while (true);do docker exec -i mongodb mongosh --eval 'db.orders.countDocuments();' ordersdb --username root --password rootpassword --authenticationDatabase admin|tail -n 1;sleep 3;done
-```    # confluent-cdc-demo
+```   
+
