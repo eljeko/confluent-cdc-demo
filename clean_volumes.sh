@@ -1,0 +1,1 @@
+docker volume ls|awk '{print "docker volume rm " $2}'

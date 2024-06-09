@@ -177,7 +177,7 @@ services:
         sleep infinity
  
   mongodb_container:
-    platform: linux/arm64
+    #platform: linux/arm64
     container_name: mongodb
     image: mongo:latest
     environment:
